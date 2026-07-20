@@ -5,6 +5,7 @@ import random
 import time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from targets import TARGETS
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
 
@@ -26,13 +27,16 @@ def get_paged_url(search_query, page_num=0):
     else:
         return f"{base_url}&page_token=v1:{page_num}"
 
-def scrape_nui_mercari(search_query, max_images=100):
+def scrape_nui_mercari(target, max_images=100):
     """Scrapes image URLs from Mercari search results for the given query and saves the images.
     Sleep around 3 seconds with random jitter between requests.
     
     Caveat: max_images doesn't consider if new images are duplicated with the existing ones.
     So the actual number of saved images may be less than max_images. Anyway the number of images stored in data directory is around max_images.
     """
+    
+    category_name = target["category_name"]
+    search_query = target["query"]
     with sync_playwright() as p:
         # headless is recommended for WSL
         browser = p.chromium.launch(headless=True)
@@ -66,7 +70,7 @@ def scrape_nui_mercari(search_query, max_images=100):
 
         browser.close()
         
-    save_images(list(image_urls), search_query)
+    save_images(list(image_urls), category_name)
 
 def save_images(image_urls, category_name):
     """Downloads and saves images from the provided URLs.
@@ -122,4 +126,5 @@ def save_image_with_hash(image_binary, category_name):
     print(f"Saved: {file_name}")
 
 if __name__ == "__main__":
-    scrape_nui_mercari("ことね ぬい", max_images=100)
+    for target in TARGETS:
+        scrape_nui_mercari(target, max_images=100)

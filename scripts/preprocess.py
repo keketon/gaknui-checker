@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from PIL import Image, ImageOps
+from targets import TARGETS
 
 def preprocess_images(input_dir: str, output_dir: str, size: int = 224):
     input_path = Path(input_dir)
@@ -26,4 +27,7 @@ def preprocess_images(input_dir: str, output_dir: str, size: int = 224):
           print(f"Error processing {file_path}: {e}") # 破損ファイル/画像じゃないファイルが大体の原因
           
 if __name__ == "__main__":
-    preprocess_images("data/raw/ことね ぬい", "data/processed/ことね ぬい")
+    for target in TARGETS:
+        raw_img_dir = f"data/raw/{target['category_name']}"
+        destination_dir = f"data/processed/{target['category_name']}"
+        preprocess_images(raw_img_dir, destination_dir)
