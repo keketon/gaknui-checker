@@ -12,6 +12,8 @@
 ├── scripts/            # 実行用スクリプト
 ├── notebooks/          # 学習の試行錯誤（Jupyter Notebook / Colab）
 │   └── training.ipynb  
+├── docs/               # 実装過程で整理した設計判断・理解度メモ
+│   └── transfer-learning-notes.md
 ├── models/             # 学習済みモデルの保存先（.h5, .tflite, .json等）
 └── web/                # フロントエンド（React / Next.js等）
     ├── public/models/  # ブラウザからロードするモデル配置先

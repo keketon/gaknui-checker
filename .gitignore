@@ -219,3 +219,6 @@ __marimo__/
 
 # Training data
 data/
+
+# Trained model artifacts
+models/
