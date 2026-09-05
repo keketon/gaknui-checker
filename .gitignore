@@ -218,5 +218,5 @@ __marimo__/
 # Training data
 data/
 
-# Trained model artifacts
-models/
+# Trained model artifacts (root-level only; web/public/models/ is a deploy asset and must be tracked)
+/models/
