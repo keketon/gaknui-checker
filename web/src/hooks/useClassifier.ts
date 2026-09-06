@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   loadClassifier,
-  type Classifier,
+  type Classify,
   type ClassificationResult,
 } from "@/lib/classifier";
 
@@ -15,7 +15,7 @@ interface UseClassifierResult {
 }
 
 export function useClassifier(): UseClassifierResult {
-  const classifierRef = useRef<Classifier | null>(null);
+  const classifyRef = useRef<Classify | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,11 +23,11 @@ export function useClassifier(): UseClassifierResult {
     let isCancelled = false;
 
     loadClassifier()
-      .then((classifier) => {
+      .then((classify) => {
         if (isCancelled) {
           return;
         }
-        classifierRef.current = classifier;
+        classifyRef.current = classify;
         setIsLoading(false);
       })
       .catch((loadError: unknown) => {
@@ -49,10 +49,10 @@ export function useClassifier(): UseClassifierResult {
 
   const classify = useCallback(
     async (source: CanvasImageSource): Promise<ClassificationResult[]> => {
-      if (!classifierRef.current) {
+      if (!classifyRef.current) {
         throw new Error("モデルがまだ読み込まれていません");
       }
-      return classifierRef.current.classify(source);
+      return classifyRef.current(source);
     },
     [],
   );
