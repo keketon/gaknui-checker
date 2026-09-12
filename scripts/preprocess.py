@@ -1,7 +1,30 @@
 import os
+from collections import defaultdict
 from pathlib import Path
 from PIL import Image, ImageOps
 from targets import TARGETS
+
+def remove_cross_category_duplicates(raw_dir: str = "data/raw") -> None:
+    """複数カテゴリに同じ画像（ファイル名=ハッシュが一致）が存在する場合、
+    広告等の無関係な画像とみなして全カテゴリから削除する
+    """
+    raw_path = Path(raw_dir)
+
+    file_locations: dict[str, list[Path]] = defaultdict(list)
+    for category_dir in raw_path.iterdir():
+        if not category_dir.is_dir():
+            continue
+        for file_path in category_dir.glob("*"):
+            file_locations[file_path.name].append(file_path)
+
+    for file_name, paths in file_locations.items():
+        categories = {path.parent.name for path in paths}
+        if len(categories) < 2:
+            continue
+
+        print(f"Removing cross-category duplicate: {file_name} ({', '.join(categories)})")
+        for path in paths:
+            path.unlink()
 
 def preprocess_images(input_dir: str, output_dir: str, size: int = 224):
     input_path = Path(input_dir)
@@ -27,6 +50,8 @@ def preprocess_images(input_dir: str, output_dir: str, size: int = 224):
           print(f"Error processing {file_path}: {e}") # 破損ファイル/画像じゃないファイルが大体の原因
           
 if __name__ == "__main__":
+    remove_cross_category_duplicates()
+
     for target in TARGETS:
         raw_img_dir = f"data/raw/{target['category_name']}"
         destination_dir = f"data/processed/{target['category_name']}"

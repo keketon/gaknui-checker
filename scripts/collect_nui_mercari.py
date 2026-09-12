@@ -45,8 +45,8 @@ def scrape_nui_mercari(target, max_images=100):
         
         image_urls = set()
         
-        # Arbitrary limit 10: 10 pages should be enough to get 100 images.
-        for page_num in range(10):
+        # Arbitrary limit 50: 50 pages should be enough to get 500 images.
+        for page_num in range(50):
             # Open a page
             search_url = get_paged_url(search_query, page_num)
             print(f"Searching for: {search_query} in the {page_num} page...")
@@ -127,4 +127,4 @@ def save_image_with_hash(image_binary, category_name):
 
 if __name__ == "__main__":
     for target in TARGETS:
-        scrape_nui_mercari(target, max_images=100)
+        scrape_nui_mercari(target, max_images=500)
