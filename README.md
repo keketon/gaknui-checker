@@ -10,8 +10,11 @@
 │   ├── raw/            # スクレイピングしたままの生データ
 │   └── processed/      # リサイズ・正規化済みの学習用データ
 ├── scripts/            # 実行用スクリプト
-├── notebooks/          # 学習の試行錯誤（Jupyter Notebook / Colab）
-│   └── training.ipynb  
+│   ├── targets.py             # スクレイピング対象キャラクターの設定
+│   ├── collect_nui_mercari.py # Mercariから画像をスクレイピング
+│   ├── preprocess.py          # 画像の前処理（リサイズ・パディング）
+│   ├── train.py               # 転移学習の実行
+│   └── export_onnx.py         # 学習済みモデルをONNXに変換
 ├── docs/               # 実装過程で整理した設計判断・理解度メモ
 │   └── transfer-learning-notes.md
 ├── models/             # 学習済みモデルの保存先（.h5, .tflite, .json等）
