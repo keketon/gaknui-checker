@@ -27,7 +27,7 @@ CONFIG = {
     "seed": 42,
     "val_ratio": 0.2,
     "batch_size": 16,
-    "num_epochs": 15,
+    "num_epochs": 20,
     "lr": 1e-3,
     "device": "cuda" if torch.cuda.is_available() else "cpu",
 }
@@ -60,8 +60,10 @@ def build_model(num_classes: int) -> nn.Module:
 
     for param in model.features.parameters():
         param.requires_grad = False
-    for param in model.classifier[0].parameters():
-        param.requires_grad = False
+    for param in model.features[-2:].parameters():
+        param.requires_grad = True
+        
+    model.classifier[2] = nn.Dropout(p=0.4)
 
     in_features = model.classifier[-1].in_features
     model.classifier[-1] = nn.Linear(in_features, num_classes)
@@ -116,6 +118,8 @@ if __name__ == "__main__":
 
     train_transform = transforms.Compose(
         [
+            transforms.ColorJitter(brightness=0.8, contrast=0.8),
+            transforms.RandomRotation(degrees=5),
             # ぬいの位置を画像内である程度ランダムに動かすことで、ユーザーがぬいをカメラの端で捉えたときにも適応できるようにする、という理解
             transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
             # Horizontal Flipはスマホのインカメラ使用時などを想定して必要そう
@@ -158,23 +162,29 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
 
     # 凍結していないパラメータのみoptimizerに渡す
-    optimizer = torch.optim.AdamW(
-        filter(lambda p: p.requires_grad, model.parameters()),
-        lr=CONFIG["lr"],
-    )
+    optimizer = torch.optim.AdamW([
+        {"params": model.classifier.parameters(), "lr": CONFIG["lr"]},
+        {"params": model.features[-2:].parameters(), "lr": CONFIG["lr"] * 0.1},
+    ])
 
     best_val_acc = 0.0
     CONFIG["model_dir"].mkdir(parents=True, exist_ok=True)
+    
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode="min", factor=0.5, patience=2
+    )
 
     for epoch in range(CONFIG["num_epochs"]):
         train_loss = train_one_epoch(
             model, train_loader, criterion, optimizer, CONFIG["device"]
         )
         val_loss, val_acc = evaluate(model, val_loader, criterion, CONFIG["device"])
+        scheduler.step(val_loss)
 
         print(
             f"epoch {epoch + 1}/{CONFIG['num_epochs']} "
-            f"train_loss={train_loss:.4f} val_loss={val_loss:.4f} val_acc={val_acc:.4f}"
+            f"train_loss={train_loss:.4f} val_loss={val_loss:.4f} val_acc={val_acc:.4f} "
+            f"lr={optimizer.param_groups[0]['lr']:.6f}"
         )
 
         # ベスト更新時にチェックポイントを保存
